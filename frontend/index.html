@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NUSAskify · Policy Q&amp;A</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">N</span>
+      <div>
+        <h1>NUSAskify</h1>
+        <p class="muted small">Internal policy Q&amp;A · answers with sources</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="health" class="health muted small" title="Backend health">checking…</span>
+      <label class="tenant">
+        <span class="small muted">Tenant</span>
+        <select id="tenant-select" aria-label="Tenant"></select>
+      </label>
+      <a class="small" href="/docs" target="_blank" rel="noopener">API docs ↗</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Left column: documents -->
+    <section class="column">
+      <div class="card">
+        <h2>Upload document</h2>
+        <form id="upload-form" novalidate>
+          <label class="field">
+            <span>File (PDF or DOCX)</span>
+            <input type="file" name="file" id="upload-file" accept=".pdf,.docx" required />
+          </label>
+          <div class="row">
+            <label class="field grow">
+              <span>Title</span>
+              <input type="text" name="title" placeholder="Annual Leave Policy" required />
+            </label>
+            <label class="field narrow">
+              <span>Version</span>
+              <input type="text" name="version" placeholder="2.0" required />
+            </label>
+          </div>
+          <div class="row">
+            <label class="field grow">
+              <span>Valid from</span>
+              <input type="date" name="valid_from" required />
+            </label>
+            <label class="field grow">
+              <span>Valid to</span>
+              <input type="date" name="valid_to" required />
+            </label>
+          </div>
+          <p class="hint small muted">Same title = new version of the same document; older versions are marked expired.</p>
+          <button type="submit" class="btn primary" id="upload-btn">Upload &amp; index</button>
+          <div id="upload-status" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Documents <span id="doc-count" class="pill muted"></span></h2>
+          <div class="actions">
+            <button type="button" class="btn ghost small" id="select-current">Select current</button>
+            <button type="button" class="btn ghost small" id="select-none">Clear</button>
+            <button type="button" class="btn ghost small" id="refresh-docs" title="Reload">↻</button>
+          </div>
+        </div>
+        <p class="small muted">Tick the documents that form the search scope.</p>
+        <div id="doc-list" class="doc-list"><p class="muted">Loading…</p></div>
+      </div>
+    </section>
+
+    <!-- Right column: ask + results -->
+    <section class="column">
+      <div class="card">
+        <h2>Ask a question</h2>
+        <form id="ask-form">
+          <textarea id="question" rows="3" placeholder="e.g. How many days per week can I work from home?" required></textarea>
+          <div class="row ask-controls">
+            <label class="field narrow">
+              <span>Top-k</span>
+              <input type="number" id="top-k" min="1" max="20" value="5" />
+            </label>
+            <label class="field">
+              <span>Chunking</span>
+              <select id="chunking-method">
+                <option value="semantic">Semantic</option>
+                <option value="structure">Structure-based</option>
+              </select>
+            </label>
+            <div class="spacer"></div>
+            <button type="button" class="btn" id="search-btn" title="Retrieval only, no LLM">Search only</button>
+            <button type="submit" class="btn primary" id="ask-btn">Ask</button>
+          </div>
+          <p id="scope-info" class="small muted"></p>
+        </form>
+      </div>
+
+      <div class="card" id="answer-card" hidden>
+        <div class="card-head">
+          <h2>Answer</h2>
+          <span id="answer-status" class="badge"></span>
+        </div>
+        <div id="answer-text" class="answer"></div>
+        <p id="answer-reason" class="small muted"></p>
+        <div id="citations"></div>
+      </div>
+
+      <div class="card" id="chunks-card" hidden>
+        <div class="card-head">
+          <h2>Retrieved chunks <span id="chunks-count" class="pill muted"></span></h2>
+          <span id="chunks-meta" class="small muted"></span>
+        </div>
+        <ol id="chunk-results" class="chunk-results"></ol>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="chunks-dialog">
+    <div class="dialog-head">
+      <div>
+        <h2 id="dialog-title">Chunks</h2>
+        <p id="dialog-subtitle" class="small muted"></p>
+      </div>
+      <div class="actions">
+        <select id="dialog-method" aria-label="Chunking method">
+          <option value="semantic">Semantic</option>
+          <option value="structure">Structure-based</option>
+        </select>
+        <button type="button" class="btn ghost" id="dialog-close" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div id="dialog-body" class="dialog-body"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

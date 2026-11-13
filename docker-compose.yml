@@ -1,0 +1,22 @@
+services:
+  db:
+    # PostgreSQL 17 with the pgvector extension (>= 0.8, needed for hnsw.iterative_scan).
+    image: pgvector/pgvector:pg17
+    container_name: nusaskify-db
+    environment:
+      POSTGRES_USER: nusaskify
+      POSTGRES_PASSWORD: nusaskify
+      POSTGRES_DB: nusaskify
+    ports:
+      # Host port 5433 avoids clashing with a locally installed PostgreSQL on 5432.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nusaskify -d nusaskify"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
